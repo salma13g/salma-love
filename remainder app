@@ -1,0 +1,464 @@
+# remainder-app
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>🌈 Cute To-Do List</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#ff7eb3">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+      background-size: 400% 400%;
+      animation: bgMove 10s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .screen {
+      width: 320px;
+      max-height: 640px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+      background: white;
+    }
+
+    .home, .templates, .app {
+      padding: 20px 18px 24px;
+    }
+
+    .home, .templates {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .home h1, .templates h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .home p, .templates p {
+      margin: 10px 0 20px;
+      color: #666;
+    }
+
+    .home button, .templates button {
+      padding: 12px 20px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #84fab0, #8fd3f4);
+      font-weight: bold;
+      font-size: 16px;
+      margin: 8px 0;
+    }
+
+    .templates .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .templateCard {
+      width: 120px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 2px solid #f1f1f1;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .templateCard:hover {
+      transform: scale(1.03);
+    }
+
+    .templateCard .title {
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .sticker {
+      position: absolute;
+      font-size: 28px;
+      pointer-events: none;
+    }
+    .s1 { top: -12px; left: -10px; }
+    .s2 { top: -14px; right: -10px; }
+    .s3 { bottom: -12px; left: -6px; }
+    .s4 { bottom: -14px; right: -6px; }
+
+    h2 {
+      text-align: center;
+      margin: 6px 0 12px;
+      font-size: 22px;
+    }
+
+    .inputRow {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #ffd1dc;
+      outline: none;
+    }
+
+    button.add {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #84fab0, #8fd3f4);
+      font-weight: bold;
+    }
+
+    button.add:active {
+      transform: scale(0.95);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 8px 0;
+      padding: 10px 12px;
+      background: #fff7fb;
+      border-radius: 14px;
+      transition: transform 0.1s ease, background 0.2s ease;
+    }
+
+    li:hover { transform: scale(1.02); }
+    li:active { transform: scale(0.97); }
+
+    li.done {
+      text-decoration: line-through;
+      opacity: 0.6;
+      background: #e8ffe8;
+    }
+
+    .taskText {
+      flex: 1;
+    }
+
+    .delete {
+      border: none;
+      border-radius: 10px;
+      padding: 6px 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* NEW: label + arrow */
+    .labelBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .labelBox span {
+      font-size: 14px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .arrow {
+      font-size: 18px;
+      animation: arrowMove 1s ease infinite;
+    }
+
+    @keyframes arrowMove {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(4px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="screen">
+    <!-- Home Screen -->
+    <div id="homeScreen" class="home">
+      <h1>🌈 Cute To-Do</h1>
+      <p>Choose your favorite theme before starting.</p>
+      <button onclick="openTemplates()">Choose Template ✨</button>
+    </div>
+
+    <!-- Templates Screen -->
+    <div id="templatesScreen" class="templates" style="display:none;">
+      <h1>Pick a Template</h1>
+      <p>Each theme changes colors and stickers.</p>
+
+      <div class="row">
+        <div class="templateCard" onclick="chooseTemplate('pastel')">
+          <div>🌸</div>
+          <div class="title">Pastel</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('stars')">
+          <div>⭐</div>
+          <div class="title">Stars</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('fruit')">
+          <div>🍓</div>
+          <div class="title">Fruits</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('anime')">
+          <div>🫶</div>
+          <div class="title">Anime</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('cat')">
+          <div>🐱</div>
+          <div class="title">Cat</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('unicorn')">
+          <div>🦄</div>
+          <div class="title">Unicorn</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('nature')">
+          <div>🌿</div>
+          <div class="title">Nature</div>
+        </div>
+
+        <div class="templateCard" onclick="chooseTemplate('game')">
+          <div>🎮</div>
+          <div class="title">Game</div>
+        </div>
+      </div>
+
+      <button onclick="backHome()">Back</button>
+    </div>
+
+    <!-- App Screen -->
+    <div id="appScreen" class="app" style="display:none;">
+      <div class="sticker s1">🧸</div>
+      <div class="sticker s2">🌸</div>
+      <div class="sticker s3">⭐</div>
+      <div class="sticker s4">🍓</div>
+
+      <h2>🌈 My Cute To-Do</h2>
+
+      <!-- NEW LABEL -->
+      <div class="labelBox">
+        <span>📝 Write your task here</span>
+        <span class="arrow">⬇️</span>
+      </div>
+
+      <div class="inputRow">
+        <input id="taskInput" type="text" placeholder="✨ Write something fun" />
+        <button class="add" onclick="addTask()">➕</button>
+      </div>
+
+      <ul id="taskList"></ul>
+
+      <div class="footer">💖 Click a task to finish it</div>
+    </div>
+  </div>
+
+  <script>
+    const templates = {
+      pastel: {
+        bg: "linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee)",
+        themeColor: "#ff7eb3",
+        stickers: ["🧸","🌸","⭐","🍓"],
+        border: "#ffd1dc"
+      },
+      stars: {
+        bg: "linear-gradient(135deg, #1e3c72, #2a5298, #4a4a8a, #6a5acd)",
+        themeColor: "#7b61ff",
+        stickers: ["🌟","✨","🌙","⭐"],
+        border: "#b0b7ff"
+      },
+      fruit: {
+        bg: "linear-gradient(135deg, #ff9a9e, #ffb347, #ff7eb3, #ffb6c1)",
+        themeColor: "#ff4d6d",
+        stickers: ["🍓","🍉","🍑","🍒"],
+        border: "#ffd1dc"
+      },
+      anime: {
+        bg: "linear-gradient(135deg, #f8b4d9, #b7d6ff, #c8ffd4, #ffd2a5)",
+        themeColor: "#ff6bb5",
+        stickers: ["🫶","✨","🌸","🎀"],
+        border: "#ffb6d6"
+      },
+      cat: {
+        bg: "linear-gradient(135deg, #fceabb, #f8b195, #f7d794, #ffb3c6)",
+        themeColor: "#ff7b7b",
+        stickers: ["🐱","😺","🐾","😻"],
+        border: "#ffd1dc"
+      },
+      unicorn: {
+        bg: "linear-gradient(135deg, #c3cfe2, #c3f0c9, #f8b4d9, #ffd2a5)",
+        themeColor: "#b48cff",
+        stickers: ["🦄","🌈","✨","⭐"],
+        border: "#d1c3ff"
+      },
+      nature: {
+        bg: "linear-gradient(135deg, #a8e6cf, #dcedc1, #ffd3b6, #ffaaa5)",
+        themeColor: "#2ecc71",
+        stickers: ["🌿","🍃","🌼","🌸"],
+        border: "#b6f2c0"
+      },
+      game: {
+        bg: "linear-gradient(135deg, #2b2d42, #4a4e69, #9a8c98, #c9ada7)",
+        themeColor: "#00bcd4",
+        stickers: ["🎮","🕹️","⭐","👾"],
+        border: "#b0e0e6"
+      }
+    };
+
+    const emojis = ['🌟','🍀','🧁','📚','🎀','🌈','🐣','🍩'];
+
+    // --------------------
+    // LOAD SAVED DATA
+    // --------------------
+    const savedTemplate = localStorage.getItem('cuteTodoTemplate');
+    const savedTasks = JSON.parse(localStorage.getItem('cuteTodoTasks') || "[]");
+
+    if (savedTemplate) {
+      applyTemplate(savedTemplate);
+      openApp();
+      loadTasks(savedTasks);
+    }
+
+    function openTemplates() {
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('templatesScreen').style.display = 'flex';
+    }
+
+    function backHome() {
+      document.getElementById('templatesScreen').style.display = 'none';
+      document.getElementById('homeScreen').style.display = 'flex';
+    }
+
+    function chooseTemplate(name) {
+      localStorage.setItem('cuteTodoTemplate', name);
+      applyTemplate(name);
+      openApp();
+    }
+
+    function applyTemplate(name) {
+      const t = templates[name];
+      document.body.style.background = t.bg;
+      document.querySelector("meta[name='theme-color']").setAttribute("content", t.themeColor);
+
+      const stickers = document.querySelectorAll(".sticker");
+      stickers[0].textContent = t.stickers[0];
+      stickers[1].textContent = t.stickers[1];
+      stickers[2].textContent = t.stickers[2];
+      stickers[3].textContent = t.stickers[3];
+    }
+
+    function openApp() {
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('templatesScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+    }
+
+    function loadTasks(tasks) {
+      tasks.forEach(t => {
+        const li = createTaskElement(t.text, t.done);
+        document.getElementById('taskList').appendChild(li);
+      });
+    }
+
+    function createTaskElement(text, done=false) {
+      const li = document.createElement('li');
+      if (done) li.classList.add('done');
+
+      const span = document.createElement('span');
+      span.className = 'taskText';
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      span.innerHTML = `<span class="emoji">${emoji}</span>${text}`;
+
+      li.appendChild(span);
+      li.onclick = () => {
+        li.classList.toggle('done');
+        saveTasks();
+      };
+
+      const del = document.createElement('button');
+      del.className = 'delete';
+      del.textContent = '🗑️';
+      del.onclick = (e) => {
+        e.stopPropagation();
+        li.remove();
+        saveTasks();
+      };
+
+      li.appendChild(del);
+      return li;
+    }
+
+    function addTask() {
+      const input = document.getElementById('taskInput');
+      const taskText = input.value.trim();
+      if (taskText === '') return;
+
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      const li = createTaskElement(taskText);
+      document.getElementById('taskList').appendChild(li);
+      input.value = '';
+      saveTasks();
+    }
+
+    function saveTasks() {
+      const tasks = [];
+      document.querySelectorAll('#taskList li').forEach(li => {
+        tasks.push({
+          text: li.innerText.replace('🗑️', '').trim(),
+          done: li.classList.contains('done')
+        });
+      });
+      localStorage.setItem('cuteTodoTasks', JSON.stringify(tasks));
+    }
+  </script>
+</body>
+</html>
